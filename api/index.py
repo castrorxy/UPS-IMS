@@ -13,12 +13,10 @@ except Exception as e:
     # Provide a minimal fallback app so Vercel returns errors instead of 500 on import
     flask_app = Flask(__name__)
 
-def handler(request, response):
-    """Vercel Python runtime handler.
+# Expose the Flask WSGI app as a top-level symbol named `app` so Vercel can
+# detect and run it directly. This is the simplest compatible interface.
+app = flask_app
 
-    Vercel expects a function that accepts (request, response). We adapt by
-    delegating to the Flask WSGI app via Werkzeug's WSGI adapter provided by
-    Vercel runtime. The Vercel runtime will provide `request` and `response`
-    objects compatible with this signature.
-    """
-    return flask_app(request, response)
+# Also provide a `handler` for alternative runtimes that expect a function.
+def handler(request, response):
+    return app(request, response)
