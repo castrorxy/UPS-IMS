@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UPS Inventory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    {% if request.endpoint == 'login' %}
+      {# Login-only layout: no sidebar, single main wrapper #}
+      <main class="shell">
+    {% else %}
+      <div class="app-shell">
+        <aside class="sidebar">
+          <div class="sidebar-brand">
+            <div class="brand-mark">{{ current_user.initials if current_user else 'U' }}</div>
+            <div>
+              <h1>{{ current_user.name if current_user else 'Inventory Suite' }}</h1>
+            </div>
+          </div>
+          <nav class="sidebar-nav">
+            <p class="nav-label">Main</p>
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="/">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <rect x="3" y="3" width="8" height="8" rx="1.6"></rect>
+                  <rect x="13" y="3" width="8" height="8" rx="1.6"></rect>
+                  <rect x="3" y="13" width="8" height="8" rx="1.6"></rect>
+                  <rect x="13" y="13" width="8" height="8" rx="1.6"></rect>
+                </svg>
+              </span>
+              <span>Dashboard</span>
+            </a>
+            <p class="nav-label">Inventory</p>
+            <a class="nav-link {% if active_page == 'inventory' %}active{% endif %}" href="/inventory">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M3 7.5 12 3l9 4.5-9 4.5-9-4.5Z"></path>
+                  <path d="M12 12v9"></path>
+                  <path d="M3 7.5V16l9 4.5 9-4.5V7.5"></path>
+                </svg>
+              </span>
+              <span>Inventory</span>
+            </a>
+            <a class="nav-link {% if active_page == 'barcode' %}active{% endif %}" href="/barcode">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M2 7h2v10H2zM20 7h2v10h-2zM7 7h1v10H7zM10 7h4v10h-4zM14 7h1v10h-1z"/>
+                </svg>
+              </span>
+              <span>Barcode</span>
+            </a>
+            <a class="nav-link {% if active_page == 'options' %}active{% endif %}" href="/options">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <circle cx="7" cy="7" r="3"></circle>
+                  <circle cx="17" cy="17" r="3"></circle>
+                  <path d="M10 7h10"></path>
+                  <path d="M4 17h10"></path>
+                </svg>
+              </span>
+              <span>Options</span>
+            </a>
+            <a class="nav-link {% if active_page == 'reports' %}active{% endif %}" href="/reports">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M4 18v-6"></path>
+                  <path d="M10 18V8"></path>
+                  <path d="M16 18v-3"></path>
+                  <path d="M3 18h18"></path>
+                </svg>
+              </span>
+              <span>Reports</span>
+            </a>
+            <p class="nav-label">Admin</p>
+            <a class="nav-link {% if active_page == 'accounts' %}active{% endif %}" href="/accounts">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <circle cx="12" cy="8" r="3"></circle>
+                  <path d="M5 19a7 7 0 0 1 14 0"></path>
+                </svg>
+              </span>
+              <span>Accounts</span>
+            </a>
+          </nav>
+          <div class="sidebar-footer">
+            <a class="logout-btn sidebar-logout" href="/logout">Logout</a>
+          </div>
+        </aside>
+        <main class="shell">
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    {% if request.endpoint == 'login' %}
+      </main>
+    {% else %}
+        </main>
+      </div>
+    {% endif %}
+  </body>
+</html>

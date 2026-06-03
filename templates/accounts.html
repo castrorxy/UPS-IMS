@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <div class="title">
+    <h1>Accounts</h1>
+  </div>
+</header>
+
+<section class="panel account-panel">
+  <div class="panel-head">
+    <h3>Add account</h3>
+  </div>
+  {% if error %}
+  <div class="alert">{{ error }}</div>
+  {% endif %}
+  <div class="account-form">
+    <div class="account-avatar">?</div>
+    <form class="account-fields" method="post" action="/accounts">
+      <label>Name
+        <input name="name" type="text" />
+      </label>
+      <label>Username
+        <input name="username" type="text" required />
+      </label>
+      <label>Password
+        <div class="password-field">
+          <input name="password" type="password" required />
+          <button class="eye-btn" type="button" aria-label="Show password" data-toggle="password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+        </div>
+      </label>
+      <label>Role
+        <select name="role">
+          <option value="staff">Staff</option>
+          <option value="owner">Owner</option>
+          <option value="admin">Admin</option>
+          <option value="client">Client</option>
+        </select>
+      </label>
+      <div class="account-actions">
+        <button class="primary" type="submit">Add account</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h3>Existing accounts</h3>
+  </div>
+  <div class="table-wrap report-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Password</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>
+            <div class="account-name">
+              <span class="account-badge">{{ user.display_name[:1] | upper }}</span>
+              <span>{{ user.display_name }}</span>
+            </div>
+          </td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.role | capitalize }}</td>
+          <td>••••••</td>
+          <td class="account-row-actions">
+            <button
+              class="ghost btn-small soft-btn edit-account"
+              type="button"
+              data-id="{{ user.id }}"
+              data-name="{{ user.display_name }}"
+              data-username="{{ user.username }}"
+              data-role="{{ user.role }}"
+            >
+              Edit
+            </button>
+            <form method="post" action="/accounts/delete" class="inline-form">
+              <input type="hidden" name="id" value="{{ user.id }}" />
+              <button class="danger btn-small" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h3>Audit logs (latest 100)</h3>
+  </div>
+  <div class="table-wrap report-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Action</th>
+          <th>Actor</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if audit_logs %}
+          {% for log in audit_logs %}
+          <tr>
+            <td>{{ log.created_at }}</td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.actor }}</td>
+            <td>{{ log.details }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="4">No logs yet.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="modal" id="accountModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>Edit account</h2>
+      <button class="ghost" id="closeAccountModal">Close</button>
+    </div>
+    <form id="accountEditForm" class="grid" method="post" action="/accounts/update">
+      <input type="hidden" name="id" />
+      <label>Name
+        <input name="name" type="text" />
+      </label>
+      <label>Username
+        <input name="username" type="text" required />
+      </label>
+      <label>New Password
+        <div class="password-field">
+          <input name="password" type="password" placeholder="Leave blank to keep" />
+          <button class="eye-btn" type="button" aria-label="Show password" data-toggle="password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+        </div>
+      </label>
+      <label>Role
+        <select name="role">
+          <option value="staff">Staff</option>
+          <option value="owner">Owner</option>
+          <option value="admin">Admin</option>
+          <option value="client">Client</option>
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="submit" class="primary">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='accounts.js') }}"></script>
+{% endblock %}

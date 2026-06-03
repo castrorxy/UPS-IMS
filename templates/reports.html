@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <div class="title">
+    <h1>Reports</h1>
+  </div>
+  <div class="actions">
+    <span class="tag">{{ total_units }} units</span>
+  </div>
+</header>
+
+{% set in_stock = 0 %}
+{% set delivered = 0 %}
+{% for row in status_counts %}
+  {% if row.status|upper == 'IN STOCK' %}
+    {% set in_stock = row.count %}
+  {% elif row.status|upper == 'DELIVERED' %}
+    {% set delivered = row.count %}
+  {% endif %}
+{% endfor %}
+
+<!-- Summary card removed per request -->
+
+<section class="report-tables">
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Status Summary</h3>
+    </div>
+    <div class="table-wrap report-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in status_counts %}
+          <tr>
+            <td>{{ row.status }}</td>
+            <td>{{ row.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="summary-total">
+            <td>Total</td>
+            <td>{{ status_counts | sum(attribute='count') }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Top Clients</h3>
+    </div>
+    <div class="table-wrap report-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Total Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in top_clients %}
+          <tr>
+            <td>{{ row.client }}</td>
+            <td>{{ row.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="summary-total">
+            <td>Total</td>
+            <td>{{ top_clients | sum(attribute='count') }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Model Summary</h3>
+    </div>
+    <div class="table-wrap report-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Total Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in model_counts %}
+          <tr>
+            <td>{{ row.model }}</td>
+            <td>{{ row.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="summary-total">
+            <td>Total</td>
+            <td>{{ model_counts | sum(attribute='count') }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Rating Summary</h3>
+    </div>
+    <div class="table-wrap report-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Rating</th>
+            <th>Total Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rating_counts %}
+          <tr>
+            <td>{{ row.rating }}</td>
+            <td>{{ row.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="summary-total">
+            <td>Total</td>
+            <td>{{ rating_counts | sum(attribute='count') }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Company Summary</h3>
+    </div>
+    <div class="table-wrap report-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Total Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in system_counts %}
+          <tr>
+            <td>{{ row.system }}</td>
+            <td>{{ row.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="summary-total">
+            <td>Total</td>
+            <td>{{ system_counts | sum(attribute='count') }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Date Acquired (Monthly)</h3>
+    </div>
+    <div class="table-wrap report-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Total Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in month_counts %}
+          <tr>
+            <td>{{ row.month }}</td>
+            <td>{{ row.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="summary-total">
+            <td>Total</td>
+            <td>{{ month_counts | sum(attribute='count') }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

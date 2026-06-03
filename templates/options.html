@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <div class="title">
+    <h1>Options</h1>
+  </div>
+  <div class="actions">
+    <span class="tag">Inventory choices</span>
+  </div>
+</header>
+
+<section class="options-grid">
+  {% for category in categories %}
+  <div class="panel option-card{% if category.key in ['code', 'company'] %} compact{% endif %}">
+    <div class="option-head">
+      <h3>{{ category.label }}</h3>
+      <span class="option-count">{{ options[category.key] | length }}</span>
+    </div>
+    <ul class="option-bullets">
+      {% for item in options[category.key] %}
+      <li class="option-bullet">
+        <form method="post" action="{{ url_for('options_update') }}">
+          <input type="hidden" name="id" value="{{ item.id }}" />
+          <input name="value" value="{{ item.value }}" />
+          <div class="option-actions">
+            <button class="ghost btn-small danger" type="submit" formaction="{{ url_for('options_delete') }}">Delete</button>
+          </div>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    <form class="option-add" method="post" action="{{ url_for('options_add') }}">
+      <input type="hidden" name="category" value="{{ category.key }}" />
+      <input name="value" placeholder="Add new {{ category.label | lower }}" />
+      <button class="primary btn-small" type="submit">Add</button>
+    </form>
+  </div>
+  {% endfor %}
+</section>
+{% endblock %}

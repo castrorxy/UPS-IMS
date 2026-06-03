@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  /* Slightly raise inventory content to reduce top whitespace */
+  .inventory-offset { margin-top: -8px; }
+</style>
+<header class="topbar">
+  <div class="title">
+    <h1>Inventory</h1>
+  </div>
+    <div class="actions">
+    <button class="ghost" id="exportBtn">Export Excel</button>
+    <button class="primary" id="addBtn">Add Item</button>
+  </div>
+</header>
+
+<section class="panel">
+  <div class="panel-head">
+    <div class="filters">
+      <input id="searchInput" type="search" placeholder="Search model, client, serial..." />
+      <select id="statusFilter">
+        <option value="">All status</option>
+        {% for value in options.status %}
+        <option value="{{ value }}">{{ value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  <div class="inventory-offset">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Stock #</th>
+          <th>Model</th>
+          <th>Rating</th>
+          <th>Status</th>
+          <th>Serial Number</th>
+          <th>Client</th>
+          <th>Date Acquired</th>
+          <th>Date Installed</th>
+          <th>Updated</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<div class="modal" id="itemModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2 id="modalTitle">Add Item</h2>
+      <button class="ghost" id="closeModal">Close</button>
+    </div>
+    <form id="itemForm" class="grid">
+      <input type="hidden" name="id" />
+      <label>Stock #<input name="stock_no" /></label>
+      <label>Code
+        <select name="code">
+
+  </div>
+          <option value="">Select</option>
+          {% for value in options.code %}
+          <option value="{{ value }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Company
+        <select name="system">
+          <option value="">Select</option>
+          {% for value in options.company %}
+          <option value="{{ value }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Model
+        <select name="model">
+          <option value="">Select</option>
+          {% for value in options.model %}
+          <option value="{{ value }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Rating
+        <select name="rating">
+          <option value="">Select</option>
+          {% for value in options.rating %}
+          <option value="{{ value }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Status
+        <select name="status">
+          <option value="">Select</option>
+          {% for value in options.status %}
+          <option value="{{ value }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Serial Number<input name="serial_number" /></label>
+      <label>Client
+        <select name="client">
+          <option value="">Select</option>
+          {% for value in options.client %}
+          <option value="{{ value }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Date Acquired<input name="date_acquired" type="date" /></label>
+      <label>Date Installed<input name="date_installed" type="date" /></label>
+      <label>DR No.<input name="dr_no" /></label>
+      <label>SI No.<input name="si_no" /></label>
+      <label>PO<input name="po" /></label>
+      <label>Value VAT EX
+        <div class="input-prefix">
+          <span>₱</span>
+          <input name="value_vat_ex" />
+        </div>
+      </label>
+      <label>Warranty<input name="warranty" type="date" /></label>
+      <label>Terms (Days)<input name="terms" type="number" min="0" /></label>
+      <label class="full">Remarks
+        <select name="remarks">
+          <option value="">Select</option>
+          {% for value in options.remarks %}
+          <option value="{{ value }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="ghost" id="deleteBtn">Delete</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="exportModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>Export Inventory</h2>
+      <button class="ghost" id="closeExport">Close</button>
+    </div>
+    <form id="exportForm" class="grid">
+      <input type="hidden" name="type" value="" />
+      <label>Created From<input name="start" type="date" /></label>
+      <label>Created To<input name="end" type="date" /></label>
+      <div class="form-actions">
+        <button type="button" class="ghost" id="exportToday">Today</button>
+        <button type="submit" class="primary">Export</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirmation modal for deletes -->
+<div class="modal" id="confirmModal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>Confirm Delete</h2>
+      <button class="ghost" id="closeConfirm">Close</button>
+    </div>
+    <div style="padding:18px 24px 8px">
+      <p>Are you sure you want to delete this item?</p>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;padding:12px 24px 24px">
+      <button class="ghost" id="confirmNo">No</button>
+      <button class="primary" id="confirmYes">Yes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.__INITIAL_ITEMS__ = {{ items_json | safe }};
+</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% endblock %}

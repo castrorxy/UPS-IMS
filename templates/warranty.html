@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <div class="title">
+    <h1>Warranty</h1>
+  </div>
+  <div class="actions">
+    <span class="tag">{{ total_warranty }} total</span>
+  </div>
+</header>
+
+<section class="panel">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Stock #</th>
+          <th>Model</th>
+          <th>Client</th>
+          <th>Warranty</th>
+          <th>Terms</th>
+          <th>Date Acquired</th>
+          <th>Date Installed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ item.stock_no }}</td>
+          <td>{{ item.model }}</td>
+          <td>{{ item.client }}</td>
+          <td>{{ item.warranty }}</td>
+          <td>{{ item.terms }}</td>
+          <td>{{ item.date_acquired }}</td>
+          <td>{{ item.date_installed }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory Export</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <style>
+      @page { size: A4 landscape; margin: 12mm; }
+      body {
+        background: #ffffff;
+      }
+      table {
+        table-layout: auto;
+        width: 100%;
+      }
+      td,
+      th {
+        white-space: nowrap;
+        font-size: 11px;
+      /* Make PDF table visually match on-screen review: header band, padded rows */
+      .table-wrap { background: #fff; border-radius: 12px; padding: 8px; }
+      thead th { background: var(--orange); color: #fff; padding: 8px 12px; text-align:left; font-weight:700; }
+      }
+      .export-shell {
+        padding: 24px;
+      }
+      .export-meta {
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: #5b5f70;
+      }
+      .export-actions {
+        margin-bottom: 16px;
+      }
+      @media print {
+        html, body { width: 297mm; height: 210mm; }
+        .export-actions {
+          display: none;
+        }
+        .panel {
+          box-shadow: none;
+          border: none;
+          padding: 0;
+        }
+        .table-wrap {
+          box-shadow: none;
+          border: none;
+          border-radius: 6px;
+        }
+        tbody td { padding: 10px 12px; color: #222; }
+        tbody tr:nth-child(odd) td { background: transparent; }
+        table { border-collapse: collapse; }
+        th, td { border-bottom: 1px solid #f0f2f7; }
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="export-shell">
+      <header class="topbar">
+        <div class="title">
+          <h1>Inventory Export</h1>
+        </div>
+        <div class="actions export-actions">
+          <button class="primary" onclick="window.print()">Print / Save PDF</button>
+        </div>
+      </header>
+      <div class="export-meta">
+        Created date range:
+        {% if start_date %}{{ start_date }}{% else %}Any{% endif %}
+        –
+        {% if end_date %}{{ end_date }}{% else %}Any{% endif %}
+      </div>
+      <section class="panel">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Stock #</th>
+                <th>Code</th>
+                <th>Company</th>
+                <th>Model</th>
+                <th>Rating</th>
+                <th>Status</th>
+                <th>Serial Number</th>
+                <th>Client</th>
+                <th>Date Acquired</th>
+                <th>Date Installed</th>
+                <th>DR No.</th>
+                <th>SI No.</th>
+                <th>PO</th>
+                <th>Value VAT EX</th>
+                <th>Warranty</th>
+                <th>Terms</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td>{{ item.stock_no }}</td>
+                <td>{{ item.code }}</td>
+                <td>{{ item.system }}</td>
+                <td>{{ item.model }}</td>
+                <td>{{ item.rating }}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.serial_number }}</td>
+                <td>{{ item.client }}</td>
+                <td>{{ item.date_acquired }}</td>
+                <td>{{ item.date_installed }}</td>
+                <td>{{ item.dr_no }}</td>
+                <td>{{ item.si_no }}</td>
+                <td>{{ item.po }}</td>
+                <td>{% if item.value_vat_ex %}₱ {{ item.value_vat_ex }}{% else %}N/A{% endif %}</td>
+                <td>{{ item.warranty }}</td>
+                <td>{% if item.terms %}{{ item.terms }} days{% else %}N/A{% endif %}</td>
+                <td>{{ item.remarks }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <div class="title">
+    <h1>Dashboard</h1>
+  </div>
+  <div class="actions">
+  </div>
+</header>
+
+<section class="dashboard-grid">
+  <div class="summary-card">
+    <p class="summary-label">Total UPS</p>
+    <h2 id="totalCount">0</h2>
+    <p class="summary-note">All registered units</p>
+  </div>
+  <div class="summary-card accent">
+    <p class="summary-label">In Stock</p>
+    <h2 id="inStockCount">0</h2>
+    <p class="summary-note">Available units</p>
+  </div>
+  <div class="summary-card accent-light">
+    <p class="summary-label">Delivered</p>
+    <h2 id="deliveredCount">0</h2>
+    <p class="summary-note">Released units</p>
+  </div>
+  <div class="summary-card subtle">
+    <p class="summary-label">Last Updated</p>
+    <h2 id="reportUpdated">--</h2>
+    <p class="summary-note">Auto-refresh after edits</p>
+  </div>
+</section>
+
+<section class="report-grid">
+  <div class="panel report-card">
+    <div class="report-head">
+      <h3>Status Split</h3>
+      <span class="report-sub">In Stock vs Delivered</span>
+    </div>
+    <div class="status-bar" id="statusBar"></div>
+    <div class="status-legend" id="statusLegend"></div>
+  </div>
+  <div class="panel report-card">
+    <div class="report-head">
+      <h3>Top Models</h3>
+      <span class="report-sub">Most frequent UPS models</span>
+    </div>
+    <div class="model-chart" id="modelChart"></div>
+  </div>
+  <div class="panel report-card">
+    <div class="report-head">
+      <h3>Monthly Intake</h3>
+      <span class="report-sub">Units acquired per month</span>
+    </div>
+    <div class="bar-chart" id="intakeChart">
+      <div class="bar" style="height: 35%"></div>
+      <div class="bar" style="height: 55%"></div>
+      <div class="bar" style="height: 40%"></div>
+      <div class="bar" style="height: 70%"></div>
+      <div class="bar" style="height: 50%"></div>
+      <div class="bar" style="height: 65%"></div>
+    </div>
+    <div class="chart-axis">Recent 6 months</div>
+  </div>
+  <div class="panel report-card">
+    <div class="report-head">
+      <h3>Delivery Trend</h3>
+      <span class="report-sub">Delivered units overview</span>
+    </div>
+    <div class="line-chart" id="deliveryChart">
+      <span class="line-point" style="left: 8%; bottom: 20%"></span>
+      <span class="line-point" style="left: 28%; bottom: 38%"></span>
+      <span class="line-point" style="left: 48%; bottom: 30%"></span>
+      <span class="line-point" style="left: 68%; bottom: 55%"></span>
+      <span class="line-point" style="left: 88%; bottom: 42%"></span>
+    </div>
+    <div class="chart-axis">Rolling 5 weeks</div>
+  </div>
+</section>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% endblock %}

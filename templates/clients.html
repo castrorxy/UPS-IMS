@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <div class="title">
+    <h1>Clients</h1>
+  </div>
+  <div class="actions">
+    <span class="tag">{{ total_clients }} total</span>
+  </div>
+</header>
+
+<section class="panel">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Total Units</th>
+          <th>Last Acquired</th>
+          <th>Last Installed</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in clients %}
+        <tr>
+          <td>{{ row.client }}</td>
+          <td>{{ row.total_units }}</td>
+          <td>{{ row.last_acquired }}</td>
+          <td>{{ row.last_installed }}</td>
+          <td class="table-actions">
+            <a class="ghost btn-small" href="{{ url_for('inventory') }}?client={{ row.client | urlencode }}">View Units</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

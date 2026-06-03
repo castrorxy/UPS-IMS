@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  /* Make barcode column wider but leave room for action buttons */
+  .table-wrap table th:nth-child(1), .table-wrap table td:nth-child(1) {
+    width: auto;
+  }
+  .table-wrap table th:nth-child(2), .table-wrap table td:nth-child(2) {
+    width: 220px;
+    /* center action buttons horizontally and vertically */
+    text-align: center;
+    white-space: nowrap;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+  .table-wrap input.detail-input.small {
+    width: 100%;
+    max-width: 100%;
+  }
+  .table-wrap .ghost { margin-left: 0; }
+</style>
+<header class="topbar">
+  <div class="title"><h1>Barcode Scanner</h1></div>
+  <div class="actions"></div>
+  <div style="position:absolute;right:18px;top:18px">
+    
+  </div>
+</header>
+
+<section class="panel">
+  <div class="panel-head">
+    <div class="filters">
+      <!-- Hidden scan input kept for keyboard scanner support -->
+      <input id="scanInput" type="text" autocomplete="off" style="position:absolute;left:-9999px;top:auto;" />
+      <!-- Scan action selector: Toggle / Set Delivered / Set In Stock -->
+      <div style="display:inline-block;margin-left:12px;">
+        <label style="font-size:13px;margin-right:6px">Filter:</label>
+        <select id="scanAction">
+          <option value="in_stock">In Stock</option>
+          <option value="delivered">Delivered</option>
+          <option value="new" selected>New</option>
+          <option value="find">Find</option>
+        </select>
+        <label style="margin-left:12px;font-size:13px"><span id="setToLabel">Set to: Delivered</span>
+          <input id="setToDeliveredToggle" type="checkbox" style="margin-left:6px;vertical-align:middle" />
+        </label>
+      </div>
+      <!-- In-stock selector and action buttons temporarily removed per request -->
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table id="scanTable">
+      <thead>
+        <tr>
+              <th>Barcode</th>
+              <th>Actions</th>
+            </tr>
+      </thead>
+      <tbody id="scanBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Details modal to show full item info readonly -->
+  <div class="modal" id="detailsModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head"><h2>Item Details</h2><button class="ghost" id="closeDetails">Close</button></div>
+      <div style="padding:12px 24px;display:grid;gap:8px;max-height:60vh;overflow:auto;">
+        <div class="details-grid">
+          <div><strong>Stock #</strong><div id="d_stock_no"></div></div>
+          <div><strong>Code</strong><div id="d_code"></div></div>
+          <div><strong>Company</strong><div id="d_system"></div></div>
+          <div><strong>Model</strong><div id="d_model"></div></div>
+          <div><strong>Rating</strong><div id="d_rating"></div></div>
+          <div><strong>Status</strong><div id="d_status"></div></div>
+          <div><strong>Serial Number</strong><div id="d_serial_number"></div></div>
+          <div><strong>Client</strong><div id="d_client"></div></div>
+          <div><strong>Date Acquired</strong><div id="d_date_acquired"></div></div>
+          <div><strong>Date Installed</strong><div id="d_date_installed"></div></div>
+          <div><strong>DR No.</strong><div id="d_dr_no"></div></div>
+          <div><strong>SI No.</strong><div id="d_si_no"></div></div>
+          <div><strong>PO</strong><div id="d_po"></div></div>
+          <div><strong>Value VAT EX</strong><div id="d_value_vat_ex"></div></div>
+          <div><strong>Warranty</strong><div id="d_warranty"></div></div>
+          <div><strong>Terms</strong><div id="d_terms"></div></div>
+          <div style="grid-column:1/-1"><strong>Remarks</strong><div id="d_remarks"></div></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;padding:12px 24px 24px">
+        <button class="primary" id="detailsCloseOk">OK</button>
+      </div>
+    </div>
+  </div>
+
+  
+  </section>
+
+  <!-- Exists modal -->
+  <div class="modal" id="existsModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-head"><h2 id="existsTitle">Duplicate</h2><button class="ghost" id="closeExists">Close</button></div>
+      <div style="padding:18px 24px 8px"> <p id="existsMsg">This barcode already exists in inventory.</p> </div>
+      <div style="display:flex;justify-content:flex-end;padding:12px 24px 24px">
+        <button class="primary" id="existsOk">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit modal for single scan -->
+  <div class="modal" id="scanEditModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head"><h2>Edit Scan</h2><button class="ghost" id="closeScanEdit">Close</button></div>
+      <form id="scanEditForm" style="padding:12px 24px;display:grid;gap:8px;">
+        <label>Barcode / Serial Number<input id="editSerial" /></label>
+        <label>Model<input id="editModel" /></label>
+        <label>Client<input id="editClient" /></label>
+        <label>Status
+          <select id="editStatus">
+            <option value="">Select</option>
+            <option value="IN STOCK">In Stock</option>
+            <option value="DELIVERED">Delivered</option>
+          </select>
+        </label>
+        <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:6px;">
+          <button type="button" class="ghost" id="cancelEdit">Cancel</button>
+          <button type="submit" class="primary" id="saveEdit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Include Add Item modal so barcode page can open the item form -->
+  <div class="modal" id="itemModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="modalTitle">Add Item</h2>
+        <button class="ghost" id="closeModal">Close</button>
+      </div>
+      <form id="itemForm" class="grid">
+        <input type="hidden" name="id" />
+        <label>Stock #<input name="stock_no" /></label>
+        <label>Code
+          <select name="code">
+            <option value="">Select</option>
+            {% for value in options.code %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Company
+          <select name="system">
+            <option value="">Select</option>
+            {% for value in options.company %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Model
+          <select name="model">
+            <option value="">Select</option>
+            {% for value in options.model %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Rating
+          <select name="rating">
+            <option value="">Select</option>
+            {% for value in options.rating %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Status
+          <select name="status">
+            <option value="">Select</option>
+            {% for value in options.status %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Serial Number<input name="serial_number" /></label>
+        <label>Client
+          <select name="client">
+            <option value="">Select</option>
+            {% for value in options.client %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Date Acquired<input name="date_acquired" type="date" /></label>
+        <label>Date Installed<input name="date_installed" type="date" /></label>
+        <label>DR No.<input name="dr_no" /></label>
+        <label>SI No.<input name="si_no" /></label>
+        <label>PO<input name="po" /></label>
+        <label>Value VAT EX
+          <div class="input-prefix">
+            <span>₱</span>
+            <input name="value_vat_ex" />
+          </div>
+        </label>
+        <label>Warranty<input name="warranty" type="date" /></label>
+        <label>Terms (Days)<input name="terms" type="number" min="0" /></label>
+        <label class="full">Remarks
+          <select name="remarks">
+            <option value="">Select</option>
+            {% for value in options.remarks %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <div class="form-actions">
+          <button type="button" class="ghost" id="deleteBtn">Delete</button>
+          <button type="submit" class="primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='barcode.js') }}"></script>
+
+{% endblock %}
