@@ -38,13 +38,22 @@
       <div style="display:inline-block;margin-left:12px;">
         <label style="font-size:13px;margin-right:6px">Filter:</label>
         <select id="scanAction">
-          <option value="in_stock">In Stock</option>
+          <option value="in_stock">On Stock</option>
           <option value="delivered">Delivered</option>
           <option value="new" selected>New</option>
           <option value="find">Find</option>
         </select>
         <label style="margin-left:12px;font-size:13px"><span id="setToLabel">Set to: Delivered</span>
           <input id="setToDeliveredToggle" type="checkbox" style="margin-left:6px;vertical-align:middle" />
+        </label>
+        <label id="scanClientLabel" style="margin-left:12px;font-size:13px;display:inline-flex;align-items:center;">
+          <span style="margin-right:6px">Client:</span>
+          <select id="scanClientSelect" style="min-width:180px;">
+            <option value="">Select</option>
+            {% for value in options.client %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+          </select>
         </label>
       </div>
       <!-- In-stock selector and action buttons temporarily removed per request -->
@@ -69,9 +78,10 @@
       <div class="modal-head"><h2>Item Details</h2><button class="ghost" id="closeDetails">Close</button></div>
       <div style="padding:12px 24px;display:grid;gap:8px;max-height:60vh;overflow:auto;">
         <div class="details-grid">
+          <div><strong>Category</strong><div id="d_category"><span id="d_category_badge" class="badge-category"></span></div></div>
           <div><strong>Stock #</strong><div id="d_stock_no"></div></div>
           <div><strong>Code</strong><div id="d_code"></div></div>
-          <div><strong>Company</strong><div id="d_system"></div></div>
+          <div><strong>Brand</strong><div id="d_system"></div></div>
           <div><strong>Model</strong><div id="d_model"></div></div>
           <div><strong>Rating</strong><div id="d_rating"></div></div>
           <div><strong>Status</strong><div id="d_status"></div></div>
@@ -97,16 +107,7 @@
   
   </section>
 
-  <!-- Exists modal -->
-  <div class="modal" id="existsModal" aria-hidden="true">
-      <div class="modal-card">
-        <div class="modal-head"><h2 id="existsTitle">Duplicate</h2><button class="ghost" id="closeExists">Close</button></div>
-      <div style="padding:18px 24px 8px"> <p id="existsMsg">This barcode already exists in inventory.</p> </div>
-      <div style="display:flex;justify-content:flex-end;padding:12px 24px 24px">
-        <button class="primary" id="existsOk">OK</button>
-      </div>
-    </div>
-  </div>
+  <!-- existsModal moved to base template for site-wide availability -->
 
   <!-- Edit modal for single scan -->
   <div class="modal" id="scanEditModal" aria-hidden="true">
@@ -119,7 +120,7 @@
         <label>Status
           <select id="editStatus">
             <option value="">Select</option>
-            <option value="IN STOCK">In Stock</option>
+            <option value="ON STOCK">On Stock</option>
             <option value="DELIVERED">Delivered</option>
           </select>
         </label>
@@ -149,10 +150,18 @@
             {% endfor %}
           </select>
         </label>
-        <label>Company
+        <label>Brand
           <select name="system">
             <option value="">Select</option>
-            {% for value in options.company %}
+            {% for value in options.brand %}
+            <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Category
+          <select name="category">
+            <option value="">Select</option>
+            {% for value in options.category %}
             <option value="{{ value }}">{{ value }}</option>
             {% endfor %}
           </select>
@@ -202,7 +211,19 @@
           </div>
         </label>
         <label>Warranty<input name="warranty" type="date" /></label>
-        <label>Terms (Days)<input name="terms" type="number" min="0" /></label>
+        <label>Terms
+          <div class="terms-row">
+            <select name="terms_type" id="termsType">
+              <option value="days">Days</option>
+              <option value="cod">COD</option>
+            </select>
+            <div class="input-suffix">
+              <input name="terms_days" id="termsDays" type="number" min="0" />
+              <span>days</span>
+            </div>
+            <input name="terms" type="hidden" />
+          </div>
+        </label>
         <label class="full">Remarks
           <select name="remarks">
             <option value="">Select</option>
@@ -213,7 +234,7 @@
         </label>
         <div class="form-actions">
           <button type="button" class="ghost" id="deleteBtn">Delete</button>
-          <button type="submit" class="primary">Save</button>
+          <button type="submit" class="primary" id="itemSaveBtn">Save</button>
         </div>
       </form>
     </div>

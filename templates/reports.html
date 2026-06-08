@@ -12,7 +12,7 @@
 {% set in_stock = 0 %}
 {% set delivered = 0 %}
 {% for row in status_counts %}
-  {% if row.status|upper == 'IN STOCK' %}
+  {% if row.status|upper == 'ON STOCK' %}
     {% set in_stock = row.count %}
   {% elif row.status|upper == 'DELIVERED' %}
     {% set delivered = row.count %}
@@ -144,18 +144,18 @@
 
   <div class="panel">
     <div class="panel-head">
-      <h3>Company Summary</h3>
+      <h3>Brand Summary</h3>
     </div>
     <div class="table-wrap report-table">
       <table>
         <thead>
           <tr>
-            <th>Company</th>
+            <th>Brand</th>
             <th>Total Units</th>
           </tr>
         </thead>
         <tbody>
-          {% for row in system_counts %}
+            {% for row in system_counts %}
           <tr>
             <td>{{ row.system }}</td>
             <td>{{ row.count }}</td>
@@ -166,6 +166,36 @@
           <tr class="summary-total">
             <td>Total</td>
             <td>{{ system_counts | sum(attribute='count') }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Category Summary (AVR/UPS)</h3>
+    </div>
+    <div class="table-wrap report-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Total Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in category_counts %}
+          <tr>
+            <td>{{ row.category }}</td>
+            <td>{{ row.count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="summary-total">
+            <td>Total</td>
+            <td>{{ category_counts | sum(attribute='count') }}</td>
           </tr>
         </tfoot>
       </table>

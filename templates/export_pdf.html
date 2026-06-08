@@ -79,7 +79,7 @@
               <tr>
                 <th>Stock #</th>
                 <th>Code</th>
-                <th>Company</th>
+                <th>Brand</th>
                 <th>Model</th>
                 <th>Rating</th>
                 <th>Status</th>
@@ -114,7 +114,17 @@
                 <td>{{ item.po }}</td>
                 <td>{% if item.value_vat_ex %}₱ {{ item.value_vat_ex }}{% else %}N/A{% endif %}</td>
                 <td>{{ item.warranty }}</td>
-                <td>{% if item.terms %}{{ item.terms }} days{% else %}N/A{% endif %}</td>
+                <td>
+                  {% if item.terms %}
+                    {% if item.terms|string|upper == 'COD' %}
+                      COD
+                    {% else %}
+                      {{ item.terms }} days
+                    {% endif %}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
                 <td>{{ item.remarks }}</td>
               </tr>
               {% endfor %}

@@ -20,6 +20,8 @@ const reportUpdated = document.getElementById("reportUpdated");
 const statusBar = document.getElementById("statusBar");
 const statusLegend = document.getElementById("statusLegend");
 const modelChart = document.getElementById("modelChart");
+const termsType = document.getElementById("termsType");
+const termsDays = document.getElementById("termsDays");
 
 let items = [];
 let currentId = null;
@@ -27,6 +29,7 @@ let currentId = null;
 const fields = [
   "stock_no",
   "code",
+  "category",
   "system",
   "model",
   "rating",
@@ -48,6 +51,7 @@ const labels = {
   stock_no: "Stock #",
   code: "Code",
   system: "System",
+  category: "Category",
   model: "Model",
   rating: "Rating",
   status: "Status",
@@ -64,6 +68,89 @@ const labels = {
   remarks: "Remarks",
 };
 
+function statusDisplay(value) {
+  const raw = String(value || "").trim();
+  const upper = raw.toUpperCase();
+  if (upper === "DELIVERED") return { label: raw, className: "delivered" };
+  if (upper === "MISSING" || upper === "MISSONG" || upper === "UNIDENTIFIED") {
+    return { label: "Unidentified", className: "missing" };
+  }
+  return { label: raw, className: "in-stock" };
+}
+
+function formatTerms(value) {
+  if (!value) return "";
+  const raw = String(value).trim();
+  if (!raw) return "";
+  const upper = raw.toUpperCase();
+  if (upper === "COD") return "COD";
+  const match = raw.match(/^(\d+)\s*(DAYS?)?$/i);
+  if (match) return `${match[1]} days`;
+  return raw;
+}
+
+function parseTerms(value) {
+  if (!value) return { type: "days", days: "" };
+  const raw = String(value).trim();
+  if (!raw) return { type: "days", days: "" };
+  if (raw.toUpperCase() === "COD") return { type: "cod", days: "" };
+  const match = raw.match(/^(\d+)\s*(DAYS?)?$/i);
+  if (match) return { type: "days", days: match[1] };
+  return { type: "days", days: "" };
+}
+
+function updateTermsValue() {
+  if (!itemForm) return;
+  const termsField = itemForm.elements["terms"];
+  if (!termsField) return;
+  const type = termsType ? termsType.value : "days";
+  const termsRow = termsType ? termsType.closest(".terms-row") : null;
+
+  if (type === "cod") {
+    if (termsRow) termsRow.classList.add("is-cod");
+    if (termsDays) {
+      termsDays.value = "";
+      termsDays.disabled = true;
+    }
+    termsField.value = "COD";
+    return;
+  }
+
+  if (termsRow) termsRow.classList.remove("is-cod");
+  if (termsDays) termsDays.disabled = false;
+  const daysVal = termsDays ? String(termsDays.value || "").trim() : "";
+  termsField.value = daysVal ? `${daysVal} days` : "";
+}
+
+function syncTermsFieldsFromValue(value) {
+  if (!termsType || !termsDays) return;
+  const parsed = parseTerms(value);
+  termsType.value = parsed.type;
+  termsDays.value = parsed.days;
+  updateTermsValue();
+}
+
+function updateStatusOptionLabels() {
+  const selects = [];
+  if (statusFilter) selects.push(statusFilter);
+  if (itemForm && itemForm.elements["status"]) selects.push(itemForm.elements["status"]);
+
+  selects.forEach((select) => {
+    Array.from(select.options || []).forEach((option) => {
+      const upper = String(option.value || option.textContent || "").trim().toUpperCase();
+      if (upper === "MISSING" || upper === "MISSONG" || upper === "UNIDENTIFIED") {
+        option.textContent = "Unidentified";
+      }
+    });
+  });
+}
+
+function warrantyDisplay(item) {
+  const stockNo = String(item && item.stock_no ? item.stock_no : "").trim();
+  if (stockNo === "129") return "1YR ON BATT/2YRS ON UPS";
+  return item && item.warranty ? item.warranty : "";
+}
+
 function openModal(item) {
   if (!itemModal || !itemForm) return;
   itemModal.classList.add("show");
@@ -77,6 +164,18 @@ function openModal(item) {
     fields.forEach((field) => {
       itemForm.elements[field].value = item[field] || "";
     });
+    syncTermsFieldsFromValue(item.terms);
+  }
+  else {
+    // set next stock number for new items
+    try {
+      const maxStock = items.reduce((max, it) => {
+        const n = Number(String(it.stock_no || '').trim()) || 0;
+        return n > max ? n : max;
+      }, 0);
+      if (itemForm.elements['stock_no']) itemForm.elements['stock_no'].value = String(maxStock + 1);
+    } catch (e) {}
+    syncTermsFieldsFromValue("");
   }
 }
 
@@ -131,10 +230,10 @@ function renderTable() {
         return;
       }
       if (index === 3) {
-        const status = String(value || "").toUpperCase();
+        const statusInfo = statusDisplay(value);
         const badge = document.createElement("span");
-        badge.className = `status-pill ${status === "DELIVERED" ? "delivered" : "in-stock"}`;
-        badge.textContent = value || "";
+        badge.className = `status-pill ${statusInfo.className}`;
+        badge.textContent = statusInfo.label;
         td.appendChild(badge);
       } else {
         td.textContent = value || "";
@@ -164,8 +263,10 @@ function renderTable() {
         <div class="details-grid">
           <div class="detail-item"><span class="detail-label">Stock #</span><input class="detail-input" readonly value="${item.stock_no || ''}" placeholder="N/A" onclick="this.select()" /></div>
           <div class="detail-item model"><span class="detail-label">Model</span><input class="${inputClassFor(item.model)}" readonly value="${item.model || ''}" placeholder="N/A" onclick="this.select()" /></div>
+          <div class="detail-item"><span class="detail-label">Brand</span><input class="detail-input" readonly value="${item.system || ''}" placeholder="N/A" onclick="this.select()" /></div>
+          <div class="detail-item"><span class="detail-label">Category</span><input class="detail-input" readonly value="${item.category || ''}" placeholder="N/A" onclick="this.select()" /></div>
           <div class="detail-item"><span class="detail-label">Rating</span><input class="detail-input" readonly value="${item.rating || ''}" placeholder="N/A" onclick="this.select()" /></div>
-          <div class="detail-item"><span class="detail-label">Status</span><input class="detail-input" readonly value="${item.status || ''}" placeholder="N/A" onclick="this.select()" /></div>
+          <div class="detail-item"><span class="detail-label">Status</span><input class="detail-input" readonly value="${statusDisplay(item.status).label}" placeholder="N/A" onclick="this.select()" /></div>
           <div class="detail-item"><span class="detail-label">Serial Number</span><input class="detail-input small" readonly value="${item.serial_number || ''}" placeholder="N/A" onclick="this.select()" /></div>
           <div class="detail-item client"><span class="detail-label">Client</span><input class="${inputClassFor(item.client)}" readonly value="${item.client || ''}" placeholder="N/A" onclick="this.select()" /></div>
           <div class="detail-item"><span class="detail-label">Date Acquired</span><input class="detail-input" readonly value="${item.date_acquired || ''}" placeholder="N/A" onclick="this.select()" /></div>
@@ -174,8 +275,8 @@ function renderTable() {
           <div class="detail-item"><span class="detail-label">SI No.</span><input class="detail-input" readonly value="${item.si_no || ''}" placeholder="N/A" onclick="this.select()" /></div>
           <div class="detail-item"><span class="detail-label">PO</span><input class="detail-input" readonly value="${item.po || ''}" placeholder="N/A" onclick="this.select()" /></div>
           <div class="detail-item"><span class="detail-label">Value VAT EX</span><input class="detail-input" readonly value="${item.value_vat_ex ? formatPeso(item.value_vat_ex) : ''}" placeholder="N/A" onclick="this.select()" /></div>
-          <div class="detail-item"><span class="detail-label">Warranty</span><input class="detail-input" readonly value="${item.warranty || ''}" placeholder="N/A" onclick="this.select()" /></div>
-          <div class="detail-item"><span class="detail-label">Terms</span><input class="detail-input" readonly value="${item.terms || ''}" placeholder="N/A" onclick="this.select()" /></div>
+          <div class="detail-item"><span class="detail-label">Warranty</span><input class="detail-input" readonly value="${warrantyDisplay(item)}" placeholder="N/A" onclick="this.select()" /></div>
+          <div class="detail-item"><span class="detail-label">Terms</span><input class="detail-input" readonly value="${formatTerms(item.terms)}" placeholder="N/A" onclick="this.select()" /></div>
           <div class="detail-item full"><span class="detail-label">Remarks</span><input class="detail-input small" readonly value="${item.remarks || ''}" placeholder="N/A" onclick="this.select()" /></div>
         </div>
       </div>
@@ -271,7 +372,7 @@ function renderStatusBarData(inStock, delivered) {
   statusBar.appendChild(deliveredSeg);
 
   statusLegend.innerHTML = `
-    <div><span class="legend-dot in-stock"></span>In Stock: ${inStock}</div>
+    <div><span class="legend-dot in-stock"></span>On Stock: ${inStock}</div>
     <div><span class="legend-dot delivered"></span>Delivered: ${delivered}</div>
   `;
 }
@@ -310,18 +411,35 @@ function renderModelChartData(models) {
 }
 
 async function fetchSummary() {
-  if (!totalCount) return;
   const response = await fetch("/api/summary", { cache: "no-store" });
   if (!response.ok) return;
   const data = await response.json();
+
+  // update global totals if present
+  if (document.getElementById('totalUps')) {
+    const ups = data.category_counts && data.category_counts['UPS'] ? data.category_counts['UPS'] : { total: 0, on_stock: 0, delivered: 0 };
+    document.getElementById('totalUps').textContent = ups.total || 0;
+    const upsOn = document.getElementById('upsInStock'); if (upsOn) upsOn.textContent = ups.on_stock || 0;
+    const upsDel = document.getElementById('upsDelivered'); if (upsDel) upsDel.textContent = ups.delivered || 0;
+  }
+
+  if (document.getElementById('totalAvr')) {
+    const avr = data.category_counts && data.category_counts['AVR'] ? data.category_counts['AVR'] : { total: 0, on_stock: 0, delivered: 0 };
+    document.getElementById('totalAvr').textContent = avr.total || 0;
+    const avrOn = document.getElementById('avrInStock'); if (avrOn) avrOn.textContent = avr.on_stock || 0;
+    const avrDel = document.getElementById('avrDelivered'); if (avrDel) avrDel.textContent = avr.delivered || 0;
+  }
+
+  // legacy/status-summary for overall charts
   const statusCounts = data.status_counts || [];
   const statusMap = new Map(
     statusCounts.map((entry) => [normalizeStatus(entry.status), entry.count])
   );
-  const inStock = statusMap.get("IN STOCK") || 0;
+  const inStock = statusMap.get("ON STOCK") || 0;
   const delivered = statusMap.get("DELIVERED") || 0;
 
-  totalCount.textContent = data.total_count || 0;
+  // overall totals
+  if (totalCount) totalCount.textContent = data.total_count || 0;
   if (inStockCount) inStockCount.textContent = inStock;
   if (deliveredCount) deliveredCount.textContent = delivered;
   if (reportUpdated) {
@@ -365,10 +483,43 @@ function applyExport(type, start, end) {
 async function saveItem(event) {
   if (!itemForm) return;
   event.preventDefault();
+  updateTermsValue();
   const payload = {};
   fields.forEach((field) => {
     payload[field] = itemForm.elements[field].value.trim();
   });
+
+  // client-side validation: require only status and serial_number
+  const required = ['status','serial_number'];
+  const missing = required.filter(f => !payload[f] || payload[f] === '');
+  if (missing.length > 0) {
+    console.warn('Missing required fields:', missing, payload);
+    // visually mark missing fields on the form
+    missing.forEach((m) => {
+      try {
+        const el = itemForm.elements[m];
+        if (el) el.style.outline = '2px solid #d9534f';
+      } catch (e) {}
+    });
+    // focus first missing
+    try { const first = missing[0]; const firstEl = itemForm.elements[first]; if (firstEl && typeof firstEl.focus === 'function') firstEl.focus(); } catch (e) {}
+    // show existsModal if available with clearer message
+    try {
+      const titleEl = document.getElementById('existsTitle');
+      const msgEl = document.getElementById('existsMsg');
+      const existsOkBtn = document.getElementById('existsOk');
+      const closeExistsBtn = document.getElementById('closeExists');
+      if (titleEl && msgEl) {
+        titleEl.textContent = 'Please fill required fields';
+        msgEl.textContent = 'Please fill required fields before saving: ' + missing.map(m => ({status:'Status',serial_number:'Serial Number'}[m]||m)).join(', ');
+        if (existsOkBtn) existsOkBtn.disabled = false;
+        if (closeExistsBtn) closeExistsBtn.style.display = 'none';
+        const existsModal = document.getElementById('existsModal');
+        if (existsModal) { existsModal.classList.add('show'); existsModal.setAttribute('aria-hidden','false'); }
+      }
+    } catch (e) {}
+    return;
+  }
 
   const url = currentId ? `/api/items/${currentId}` : "/api/items";
   const method = currentId ? "PUT" : "POST";
@@ -379,7 +530,30 @@ async function saveItem(event) {
   });
 
   if (!response.ok) {
-    alert("Save failed. Please try again.");
+    let message = 'Save failed. Please try again.';
+    try {
+      const data = await response.json();
+      if (data && data.error) {
+        message = data.error;
+      }
+    } catch (err) {
+      // ignore invalid JSON
+    }
+    try {
+      const titleEl = document.getElementById('existsTitle');
+      const msgEl = document.getElementById('existsMsg');
+      if (titleEl && msgEl) {
+        titleEl.textContent = 'Save failed';
+        msgEl.textContent = message;
+        const existsModal = document.getElementById('existsModal');
+        const existsOkBtn = document.getElementById('existsOk');
+        const closeExistsBtn = document.getElementById('closeExists');
+        if (existsOkBtn) existsOkBtn.disabled = false;
+        if (closeExistsBtn) closeExistsBtn.style.display = '';
+        if (existsModal) { existsModal.classList.add('show'); existsModal.setAttribute('aria-hidden','false'); return; }
+      }
+    } catch (e) {}
+    console.error('Save failed, and existsModal not found');
     return;
   }
 
@@ -397,7 +571,21 @@ async function performDeleteItem() {
   if (!currentId) return;
   const response = await fetch(`/api/items/${currentId}`, { method: "DELETE" });
   if (!response.ok) {
-    alert("Delete failed.");
+    try {
+      const titleEl = document.getElementById('existsTitle');
+      const msgEl = document.getElementById('existsMsg');
+      if (titleEl && msgEl) {
+        titleEl.textContent = 'Delete failed';
+        msgEl.textContent = 'Delete failed.';
+        const existsModal = document.getElementById('existsModal');
+        const existsOkBtn = document.getElementById('existsOk');
+        const closeExistsBtn = document.getElementById('closeExists');
+        if (existsOkBtn) existsOkBtn.disabled = false;
+        if (closeExistsBtn) closeExistsBtn.style.display = '';
+        if (existsModal) { existsModal.classList.add('show'); existsModal.setAttribute('aria-hidden','false'); return; }
+      }
+    } catch (e) {}
+    console.error('Delete failed, and existsModal not found');
     return;
   }
   await fetchItems();
@@ -444,6 +632,8 @@ if (itemModal) {
     if (event.target === itemModal) closeModalView();
   });
 }
+if (termsType) termsType.addEventListener("change", updateTermsValue);
+if (termsDays) termsDays.addEventListener("input", updateTermsValue);
 if (itemForm) itemForm.addEventListener("submit", saveItem);
 if (deleteBtn) deleteBtn.addEventListener("click", deleteItem);
 if (searchInput) searchInput.addEventListener("input", renderTable);
@@ -484,6 +674,8 @@ if (tableBody && window.__INITIAL_ITEMS__) {
   renderTable();
   delete window.__INITIAL_ITEMS__;
 }
+
+updateStatusOptionLabels();
 
 if (searchInput && tableBody) {
   const params = new URLSearchParams(window.location.search);

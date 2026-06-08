@@ -66,10 +66,18 @@
           {% endfor %}
         </select>
       </label>
-      <label>Company
+      <label>Brand
         <select name="system">
           <option value="">Select</option>
-          {% for value in options.company %}
+          {% for value in options.brand %}
+          <option value="{{ value }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Category
+        <select name="category">
+          <option value="">Select</option>
+          {% for value in options.category %}
           <option value="{{ value }}">{{ value }}</option>
           {% endfor %}
         </select>
@@ -119,7 +127,19 @@
         </div>
       </label>
       <label>Warranty<input name="warranty" type="date" /></label>
-      <label>Terms (Days)<input name="terms" type="number" min="0" /></label>
+      <label>Terms
+        <div class="terms-row">
+          <select name="terms_type" id="termsType">
+            <option value="days">Days</option>
+            <option value="cod">COD</option>
+          </select>
+          <div class="input-suffix">
+            <input name="terms_days" id="termsDays" type="number" min="0" />
+            <span>days</span>
+          </div>
+          <input name="terms" type="hidden" />
+        </div>
+      </label>
       <label class="full">Remarks
         <select name="remarks">
           <option value="">Select</option>
@@ -146,6 +166,15 @@
       <input type="hidden" name="type" value="" />
       <label>Created From<input name="start" type="date" /></label>
       <label>Created To<input name="end" type="date" /></label>
+      <!-- Import removed: export-only modal -->
+      <label>Export Category
+        <select name="category">
+          <option value="">(all)</option>
+          {% for value in options.category %}
+          <option value="{{ value }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
       <div class="form-actions">
         <button type="button" class="ghost" id="exportToday">Today</button>
         <button type="submit" class="primary">Export</button>
@@ -175,4 +204,7 @@
   window.__INITIAL_ITEMS__ = {{ items_json | safe }};
 </script>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
+<script>
+// Import UI removed: no client-side import handler
+</script>
 {% endblock %}

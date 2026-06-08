@@ -11,23 +11,35 @@
 <section class="dashboard-grid">
   <div class="summary-card">
     <p class="summary-label">Total UPS</p>
-    <h2 id="totalCount">0</h2>
-    <p class="summary-note">All registered units</p>
+    <h2 id="totalUps">{{ ups_stats.total }}</h2>
+    <p class="summary-note">All UPS category units</p>
+    
   </div>
   <div class="summary-card accent">
-    <p class="summary-label">In Stock</p>
-    <h2 id="inStockCount">0</h2>
-    <p class="summary-note">Available units</p>
+    <p class="summary-label">On Stock (UPS)</p>
+    <h2 id="upsInStock">{{ ups_stats.on_stock }}</h2>
+    <p class="summary-note">Available UPS units</p>
   </div>
   <div class="summary-card accent-light">
-    <p class="summary-label">Delivered</p>
-    <h2 id="deliveredCount">0</h2>
-    <p class="summary-note">Released units</p>
+    <p class="summary-label">Delivered (UPS)</p>
+    <h2 id="upsDelivered">{{ ups_stats.delivered }}</h2>
+    <p class="summary-note">Released UPS units</p>
   </div>
   <div class="summary-card subtle">
-    <p class="summary-label">Last Updated</p>
-    <h2 id="reportUpdated">--</h2>
-    <p class="summary-note">Auto-refresh after edits</p>
+    <p class="summary-label">Total AVR</p>
+    <h2 id="totalAvr">{{ avr_stats.total }}</h2>
+    <p class="summary-note">All AVR category units</p>
+    
+  </div>
+  <div class="summary-card">
+    <p class="summary-label">On Stock (AVR)</p>
+    <h2 id="avrInStock">{{ avr_stats.on_stock }}</h2>
+    <p class="summary-note">Available AVR units</p>
+  </div>
+  <div class="summary-card">
+    <p class="summary-label">Delivered (AVR)</p>
+    <h2 id="avrDelivered">{{ avr_stats.delivered }}</h2>
+    <p class="summary-note">Released AVR units</p>
   </div>
 </section>
 
@@ -35,7 +47,7 @@
   <div class="panel report-card">
     <div class="report-head">
       <h3>Status Split</h3>
-      <span class="report-sub">In Stock vs Delivered</span>
+      <span class="report-sub">On Stock vs Delivered</span>
     </div>
     <div class="status-bar" id="statusBar"></div>
     <div class="status-legend" id="statusLegend"></div>

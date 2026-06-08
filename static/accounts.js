@@ -8,7 +8,8 @@ function openAccountModal(data) {
   accountEditForm.elements.id.value = data.id || "";
   accountEditForm.elements.name.value = data.name || "";
   accountEditForm.elements.username.value = data.username || "";
-  accountEditForm.elements.role.value = data.role || "staff";
+  // Role field may have been removed from the form; set only if present
+  if (accountEditForm.elements.role) accountEditForm.elements.role.value = data.role || "staff";
   accountModal.classList.add("show");
   accountModal.setAttribute("aria-hidden", "false");
 }

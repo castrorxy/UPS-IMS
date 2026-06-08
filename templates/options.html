@@ -11,7 +11,7 @@
 
 <section class="options-grid">
   {% for category in categories %}
-  <div class="panel option-card{% if category.key in ['code', 'company'] %} compact{% endif %}">
+  <div class="panel option-card{% if category.key in ['code', 'brand'] %} compact{% endif %}">
     <div class="option-head">
       <h3>{{ category.label }}</h3>
       <span class="option-count">{{ options[category.key] | length }}</span>
@@ -22,6 +22,12 @@
         <form method="post" action="{{ url_for('options_update') }}">
           <input type="hidden" name="id" value="{{ item.id }}" />
           <input name="value" value="{{ item.value }}" />
+          {% if category.key == 'category' %}
+            <input name="color" type="color" value="{{ item.color if item.color else '#2b85d3' }}" style="margin-left:8px;" />
+            <span style="display:inline-block;margin-left:8px;vertical-align:middle;">
+              <span class="badge-category" style="background: {{ item.color if item.color else '#2b85d3' }};">&nbsp;&nbsp;</span>
+            </span>
+          {% endif %}
           <div class="option-actions">
             <button class="ghost btn-small danger" type="submit" formaction="{{ url_for('options_delete') }}">Delete</button>
           </div>
@@ -32,9 +38,31 @@
     <form class="option-add" method="post" action="{{ url_for('options_add') }}">
       <input type="hidden" name="category" value="{{ category.key }}" />
       <input name="value" placeholder="Add new {{ category.label | lower }}" />
+      {% if category.key == 'category' %}
+        <label style="display:inline-block;margin-left:8px">Color: <input name="color" type="color" value="#2b85d3" /></label>
+      {% endif %}
       <button class="primary btn-small" type="submit">Add</button>
     </form>
   </div>
   {% endfor %}
 </section>
+<script>
+  // auto-submit option form when color changed for category entries
+  (function(){
+    try {
+      document.querySelectorAll('input[name="color"]').forEach(function(inp){
+        inp.addEventListener('change', function(){
+          // find enclosing form and submit
+          var f = inp.closest('form');
+          if (!f) return;
+          // ensure value input not empty
+          var val = f.querySelector('input[name="value"]');
+          if (val && String(val.value||'').trim()==='') return;
+          // submit
+          f.submit();
+        });
+      });
+    } catch(e){}
+  })();
+</script>
 {% endblock %}

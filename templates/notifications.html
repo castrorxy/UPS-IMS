@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <div class="title">
+    <h1>Notifications</h1>
+  </div>
+  <div class="actions">
+    <span class="tag">{{ total_alerts }} total</span>
+  </div>
+</header>
+
+<section class="panel">
+  <div class="notice-header">
+    <div>
+      <h3>Warranty Alerts</h3>
+      <p class="summary-note">Today: {{ today }}</p>
+    </div>
+  </div>
+  {% if due_today or overdue or upcoming %}
+  <div class="notice-list">
+    <div class="notice-card notice-section">
+      <div class="notice-main">
+        <h4>Due Today</h4>
+        <p class="notice-meta">{{ due_today_count }} items</p>
+      </div>
+    </div>
+  </div>
+  {% if due_today %}
+  <div class="notice-list">
+    {% for alert in due_today %}
+    <div class="notice-card">
+      <div class="notice-main">
+        <h4>{{ alert.message }}</h4>
+        <p class="notice-meta">
+          Stock #: {{ alert.stock_no }}
+          {% if alert.model %}• Model: {{ alert.model }}{% endif %}
+          {% if alert.client %}• Client: {{ alert.client }}{% endif %}
+        </p>
+      </div>
+      <div class="notice-date">{{ alert.due_label }} • {{ alert.due_date }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="notice-list">
+    <div class="notice-card notice-section">
+      <div class="notice-main">
+        <h4>Overdue</h4>
+        <p class="notice-meta">{{ overdue_count }} items</p>
+      </div>
+    </div>
+  </div>
+  {% if overdue %}
+  <div class="notice-list">
+    {% for alert in overdue %}
+    <div class="notice-card">
+      <div class="notice-main">
+        <h4>{{ alert.message }}</h4>
+        <p class="notice-meta">
+          Stock #: {{ alert.stock_no }}
+          {% if alert.model %}• Model: {{ alert.model }}{% endif %}
+          {% if alert.client %}• Client: {{ alert.client }}{% endif %}
+        </p>
+      </div>
+      <div class="notice-date">{{ alert.due_label }} • {{ alert.due_date }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="notice-list">
+    <div class="notice-card notice-section">
+      <div class="notice-main">
+        <h4>Upcoming (Next 7 Days)</h4>
+        <p class="notice-meta">{{ upcoming_count }} items</p>
+      </div>
+    </div>
+  </div>
+  {% if upcoming %}
+  <div class="notice-list">
+    {% for alert in upcoming %}
+    <div class="notice-card">
+      <div class="notice-main">
+        <h4>{{ alert.message }}</h4>
+        <p class="notice-meta">
+          Stock #: {{ alert.stock_no }}
+          {% if alert.model %}• Model: {{ alert.model }}{% endif %}
+          {% if alert.client %}• Client: {{ alert.client }}{% endif %}
+        </p>
+      </div>
+      <div class="notice-date">{{ alert.due_label }} • {{ alert.due_date }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="empty-state">No warranty alerts.</div>
+  {% endif %}
+</section>
+{% endblock %}

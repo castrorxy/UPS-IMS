@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UPS Inventory</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    {% if request.endpoint != 'login' %}
+    <script>
+      (function(){
+        try {
+          const today = '{{ notification_date }}';
+          const viewedKey = 'ups_notifications_viewed_' + today;
+          if (localStorage.getItem(viewedKey) === '1' || '{{ active_page }}' === 'notifications') {
+            document.documentElement.classList.add('notif-viewed');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    {% endif %}
+    <style>
+      .badge-category { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size:12px; color: #fff; }
+      .badge-ups { background:#2b85d3; }
+      .badge-avr { background:#d35400; }
+    </style>
   </head>
   <body>
     {% if request.endpoint == 'login' %}
@@ -50,6 +68,18 @@
                 </svg>
               </span>
               <span>Barcode</span>
+            </a>
+            <a class="nav-link {% if active_page == 'notifications' %}active{% endif %}" href="/notifications">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2Z" />
+                  <path d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2h16l-2-2Z" />
+                </svg>
+              </span>
+              <span>Notifications</span>
+              {% if notification_count and notification_count > 0 %}
+              <span class="nav-badge" id="notificationBadge" data-count="{{ notification_count }}">{{ notification_count }}</span>
+              {% endif %}
             </a>
             <a class="nav-link {% if active_page == 'options' %}active{% endif %}" href="/options">
               <span class="nav-icon" aria-hidden="true">
@@ -98,6 +128,75 @@
     {% else %}
         </main>
       </div>
+    {% endif %}
+    <!-- Global exists modal for form/scan messages -->
+    <div class="modal" id="existsModal" aria-hidden="true">
+      <div class="modal-card" style="max-width:520px;padding:18px;border-radius:12px;">
+        <div class="modal-head"><h2 id="existsTitle">Notice</h2></div>
+        <div style="padding:12px 18px 8px"> <p id="existsMsg">Message</p> </div>
+        <div style="display:flex;justify-content:flex-end;padding:12px 24px 24px">
+          <button class="primary" id="existsOk">OK</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function(){
+        const today = '{{ notification_date }}';
+        const viewedKey = 'ups_notifications_viewed_' + today;
+        function closeExistsModal(){
+          const em = document.getElementById('existsModal');
+          if (!em) return;
+          em.classList.remove('show');
+          em.setAttribute('aria-hidden','true');
+        }
+        const existsOk = document.getElementById('existsOk');
+        if (existsOk) existsOk.addEventListener('click', closeExistsModal);
+      })();
+    </script>
+    {% if request.endpoint != 'login' %}
+    <script>
+      (function(){
+        const messages = {{ notification_messages | tojson }};
+        const today = '{{ notification_date }}';
+        const viewedKey = 'ups_notifications_viewed_' + today;
+        const badge = document.getElementById('notificationBadge');
+        try {
+          if (badge && localStorage.getItem(viewedKey) === '1') badge.style.display = 'none';
+        } catch (e) {}
+        {% if active_page == 'notifications' %}
+        try {
+          localStorage.setItem(viewedKey, '1');
+          if (badge) badge.style.display = 'none';
+        } catch (e) {}
+        {% endif %}
+        if (!messages || !messages.length) return;
+        if (localStorage.getItem(viewedKey) === '1') return;
+        const key = 'ups_warranty_popup_at';
+        const now = Date.now();
+        const last = Number(localStorage.getItem(key) || 0);
+        const fiveHours = 5 * 60 * 60 * 1000;
+        if (now - last < fiveHours) return;
+        const msg = messages.join('\n');
+        try {
+          const titleEl = document.getElementById('existsTitle');
+          const msgEl = document.getElementById('existsMsg');
+          if (titleEl && msgEl) {
+            titleEl.textContent = 'Warranty Reminder';
+            msgEl.textContent = msg;
+            const existsModal = document.getElementById('existsModal');
+            if (existsModal) {
+              existsModal.classList.add('show');
+              existsModal.setAttribute('aria-hidden','false');
+            }
+          } else {
+            alert(msg);
+          }
+        } catch (e) {
+          alert(msg);
+        }
+        localStorage.setItem(key, String(now));
+      })();
+    </script>
     {% endif %}
   </body>
 </html>
